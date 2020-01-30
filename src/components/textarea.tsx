@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import Sentence from './sentence'
-import { RootContext, NamedEntity } from './context'
+import { RootContext, NamedEntity } from '../context'
 
 const Div = styled.div`
   margin: 0, auto;

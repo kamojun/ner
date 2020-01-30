@@ -1,26 +1,34 @@
 import React, { useReducer, useState, useContext } from 'react'
 import Export from './export'
-import FileLoad from './fileload'
+import SwitchDisplay from './switch_display'
+import { FileLoad, LabelLoad } from './fileload'
 import TextArea from './textarea'
+import TagCreateTag from './create_tag'
 import Tag from './tag'
-import { Provider, RootContext } from './context'
+import { Provider, RootContext } from '../context'
 
-const initialState = "肩が痛い";
-// const reducer = (state, action) => (
-//   action.type === 'set' ?
-//     action.text.split('\n\n') :
-//     state
-// )
 
 const App = () => {
-  const { state: { sentences, tags } } = useContext(RootContext)
+  const { state: { sentences, tags, message } } = useContext(RootContext)
+  const tagtext = tags.join('\n')
+  const rawtext = sentences.map(
+    sentence => sentence.map(
+      ({ content, tag }) => `${content}\t${tag || 'O'}`
+    ).join('\n')
+  ).join('\n\n') + '\n\n'
   return (
     <>
       <h3>NER</h3>
+      <h4>{message}</h4>
+      <LabelLoad></LabelLoad>
+      {tags.length > 0 ? <SwitchDisplay text={tagtext}>{"テキスト表示"}</SwitchDisplay> : null}
+      <br></br>
       <FileLoad></FileLoad>
-      {sentences.length > 0 ? <Export></Export> : null}
+      {sentences.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}
+      {sentences.length > 0 ? <Export text={rawtext}></Export> : null}
       <div>
-        <Tag color={"rgba(100, 100, 100, 0.3)"}>タグ作成</Tag>
+        <span>ラベル
+        </span>
         {tags.map((tag, i) => <Tag key={i}>{tag}</Tag>)}
       </div>
       <TextArea {...{ sentences }}></TextArea>

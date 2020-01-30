@@ -1,11 +1,11 @@
 import React from 'react'
 import styled from 'styled-components'
-import { RootContext, NamedEntity } from './context'
+import { RootContext, NamedEntity } from '../context'
 import { TagSpan } from './color'
 
 const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity }> = ({ sentenceNum, blockNum, str: { content, tag } }) => {
-  const { dispatch } = React.useContext(RootContext)
-  if (tag === null) {
+  const { state: { tags }, dispatch } = React.useContext(RootContext)
+  if (tag === null && tags.length > 0) {
     return <TagSpan
       onMouseUp={(e) => {
         const s = window.getSelection()
@@ -18,7 +18,7 @@ const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity
         if (a === b) {
           return
         }
-        dispatch({ type: 'tag', text: `${String(sentenceNum)} ${String(blockNum)} ${a} ${b}\tTAG2` })
+        dispatch({ type: 'tag', snum: sentenceNum, bnum: blockNum, a, b, newtag: tags[0] })
       }
       }
     >{content}
@@ -28,8 +28,9 @@ const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity
       <TagSpan
         color={tag}
         onClick={() => {
+
           dispatch({
-            type: 'switch', text: `${String(sentenceNum)} ${String(blockNum)}\t${tag}`
+            type: 'switch', snum: sentenceNum, bnum: blockNum, curtag: tag
           })
         }}
       >{content}
