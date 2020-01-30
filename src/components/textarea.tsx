@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import Sentence from './sentence'
-import { RootContext } from './context'
+import { RootContext, NamedEntity } from './context'
 
 const Div = styled.div`
   margin: 0, auto;
@@ -9,9 +9,9 @@ const Div = styled.div`
   border-width: 2;
 `
 
-const TextArea = ({ sentences }: { sentences: string[] }) => {
+const TextArea = ({ sentences }: { sentences: NamedEntity[][] }) => {
   return (
-    <Div>{sentences.map((line, i) => <Sentence key={i} num={i}>{line}</Sentence>)}</Div>
+    <Div>{sentences.map((line, i) => <Sentence key={i} sentenceNum={i} sentence={line} />)}</Div>
   )
 }
 
