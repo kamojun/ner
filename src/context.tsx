@@ -65,8 +65,8 @@ const resetTag = (nes: NamedEntity[]) => {
 }
 
 const initalState: IStore = {
-  sentences: [],
-  tags: [],
+  sentences: [[{ tag: null, content: "こんにちは。" }], []],
+  tags: ['TAG1'],
   tagcolors: new Map(),
   message: 'ラベル用のファイルを選択して下さい',
   saved: false,
@@ -97,6 +97,9 @@ type UAction = {
 } | {
   type: 'newTag',
   tagname: string
+} | {
+  type: 'debug',
+  anything: any
 }
 
 interface StoreWithAction {

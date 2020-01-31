@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { RootContext, NamedEntity } from '../context'
 import { TagSpan } from './tag'
 
-
 const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity }> = ({ sentenceNum, blockNum, str: { content, tag } }) => {
   const { state: { tags }, dispatch } = React.useContext(RootContext)
   const SwitchTag = () => {
@@ -23,9 +22,10 @@ const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity
       newtag = tags[1]
     }
     if (newtag) {
+      // setHover(true)
       dispatch({ type: 'addTag', snum: sentenceNum, bnum: blockNum, a, b, newtag })
     } else {
-
+      // setSh(true)
     }
   }
   return tag === null ?

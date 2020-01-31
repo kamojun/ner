@@ -6,9 +6,10 @@ import TextArea from './textarea'
 // import TagCreateTag from './create_tag'
 import { TagSpan } from './tag'
 import { Provider, RootContext } from '../context'
-
+import OpenModal from '../modal/openModal'
 
 const App = () => {
+  const modalstate = useState(false)
   const { state: { sentences, tags, message } } = useContext(RootContext)
   const tagtext = tags.join('\n')
   const rawtext = sentences.map(
@@ -32,6 +33,7 @@ const App = () => {
         {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
       </div>
       <TextArea {...{ sentences }}></TextArea>
+      <OpenModal></OpenModal>
     </>
   )
 }

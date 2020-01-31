@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { RootContext } from '../context'
 
 // const load()
-const demotext = "今日\tTAG1\nは\nいい天気\tTAG2\nです。\n\n明日\tTAG1\nは\n雪が降る\tTAG2\nでしょう"
+const demotext = "今日\tTAG1\nは\nいい天気\tTAG2\nです。\n\n明日\tTAG1\nは\n雪が降る\tTAG2\nでしょう\n\nいや、明日のことは何もわからない。"
 const FileLoad = () => {
   const { state: { filename }, dispatch } = React.useContext(RootContext)
   return (<>
