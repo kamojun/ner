@@ -6,6 +6,7 @@ import TextArea from './textarea'
 // import TagCreateTag from './create_tag'
 import { TagSpan } from './tag'
 import { Provider, RootContext } from '../context'
+import Tooltip from './popup'
 
 
 const App = () => {
@@ -32,6 +33,7 @@ const App = () => {
         {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
       </div>
       <TextArea {...{ sentences }}></TextArea>
+      <Tooltip text="bye">{"hello"}</Tooltip>
     </>
   )
 }

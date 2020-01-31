@@ -23,6 +23,7 @@
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
+    "react-laag": "^1.6.2",
     "styled-components": "^5.0.0"
   }
 }
