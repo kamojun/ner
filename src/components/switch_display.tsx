@@ -1,5 +1,4 @@
 import React, { Children } from 'react';
-import { RootContext } from '../context'
 import styled from 'styled-components'
 
 const Pre = styled.pre`

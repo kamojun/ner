@@ -1,20 +1,24 @@
 import React from 'react'
+import Tagged from './components/tagged'
 
 type NamedEntity = { tag: string | null, content: string }
 interface IStore {
   sentences: NamedEntity[][],
-  loaded: Boolean,
+  filename?: string,
+  labelfilename?: string,
   tags: string[],
+  tagcolors: Map<string, string>,
   message: string,
+  saved: false,
 }
 const parseText = (text: string) => (
-  text.split('\n\n').map(line => (
+  (text.split('\n\n').map(line => (
     line.split('\n').map(block => {
       const [content, ..._tag] = block.split('\t')
       const tag = _tag.length > 0 ? _tag[0] !== 'O' ? _tag[0] : null : null
       return { tag, content } as NamedEntity
     })
-  ))
+  )))
 )
 const collectTagFromSentneces = (sentences: NamedEntity[][]) => (
   [...new Set(sentences.flat().flatMap(({ tag }) => tag !== null ? [tag] : []))]
@@ -38,26 +42,44 @@ const insertTag = (ne: NamedEntity, a: number, b: number, tag: string) => {
     return inserted
   }
 }
+const joinNullTags = (nes: NamedEntity[]) => {
+  const nes2: NamedEntity[][] = []
+  nes.forEach(ne => {
+    if (ne.tag === null && nes2.length > 0) {
+      const current = nes2.slice(-1)[0]
+      if (current.slice(-1)[0].tag === null) {
+        current.push(ne)
+      } else {
+        nes2.push([ne])
+      }
+    } else {
+      nes2.push([ne])
+    }
+  })
+  return nes2.flat()
+}
+
 const resetTag = (nes: NamedEntity[]) => {
   const content = nes.flatMap(ne => ne.content).join('')
   return [{ content, tag: null } as NamedEntity]
 }
 
 const initalState: IStore = {
-  // sentences: parseText("今日\tTAG1\nは\nいい天気\tTAG2\nです。\n\n明日\tTAG1\nは\n雪が降る\tTAG2\nでしょう"),
   sentences: [],
   tags: [],
-  loaded: false,
-  message: 'ラベル用のファイルを選択して下さい'
+  tagcolors: new Map(),
+  message: 'ラベル用のファイルを選択して下さい',
+  saved: false,
 }
 type UAction = {
-  type: 'load'
-  text: string
+  type: 'load',
+  text: string,
+  filename: string
 } | {
   type: 'loadLabel'
   text: string
 } | {
-  type: 'tag',
+  type: 'addTag',
   snum: number,
   bnum: number,
   a: number,
@@ -87,25 +109,40 @@ const RootContext = React.createContext<StoreWithAction>({
 });
 
 const reducer: React.Reducer<IStore, UAction> = (state, action) => {
+  console.log(action)
   switch (action.type) {
-    case 'load': {
-      const sentences = parseText(action.text)
-      const tags = collectTagFromSentneces(sentences)
-      return { ...state, sentences, message: "ラベル付けできます。", loaded: true }
-    }
     case 'loadLabel': {
-      const tags = action.text.trim().split('\n')
+      const tags = action.text.trim().split('\n').map(x => x.split('\t')[0])
       const tagset = new Set(tags)
       if (tags.length > tagset.size) {
-        return { ...state, message: "ラベルに重複があります。" }
+        return { ...state, message: "ラベルに重複があります。" + String(tags) }
       } else {
-        return { ...state, message: "次に、データ用のファイルを選択してください。", tags }
+        const nonexisttags = collectTagFromSentneces(state.sentences).filter(tag => !tagset.has(tag))
+        if (nonexisttags.length > 0) {
+          return { ...state, message: "ラベル " + nonexisttags.join() + " がファイルに含まれていません。" }
+        }
+        const tagcolors = new Map(action.text.trim().split('\n').flatMap((x, i) => {
+          const [tag, ...c] = x.split('\t')
+          return c.length > 0 ? [[tag, c[0]]] : []
+        }))
+        return { ...state, tags, tagcolors, message: "ラベルを設定しました。" }
       }
     }
-    case 'tag': {
+    case 'load': {
+      const sentences = (parseText(action.text)).map(joinNullTags)
+      const tags = collectTagFromSentneces(sentences)
+      const tagset = new Set(state.tags)
+      const nonexisttags = tags.filter(tag => !tagset.has(tag))
+      if (nonexisttags.length > 0) {
+        return { ...state, message: "ラベル " + nonexisttags.join() + " が登録されていません。先にラベルのファイルを選択して下さい" }
+      } else {
+        return { ...state, sentences, message: "ラベル付けできます。", filename: action.filename }
+      }
+    }
+    case 'addTag': {
       const { snum, bnum, a, b, newtag } = action
       const sentences = [...state.sentences]
-      const sentence = sentences[snum].flatMap(ne => insertTag(ne, a, b, newtag))
+      const sentence = sentences[snum].flatMap((ne, i) => i === bnum ? insertTag(ne, a, b, newtag) : [ne])
       sentences[snum] = sentence
       return { ...state, sentences: sentences }
     }

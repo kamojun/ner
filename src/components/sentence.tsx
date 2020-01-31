@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import Tagged from './tagged'
 import { NamedEntity, RootContext } from '../context'
-import { TagSpan } from './color'
+import { TagSpan } from './tag'
 
 const Div = styled.div`
   margin: 5,5,5,5;
@@ -14,7 +14,7 @@ const Sentence: React.FC<Props> = (props) => {
   const { dispatch } = React.useContext(RootContext)
   return (
     <Div>
-      <TagSpan color={'rgba(0,0,255,0.5)'} onClick={() => dispatch({ type: 'reset', snum: props.sentenceNum })}>リセット</TagSpan>
+      <TagSpan tag="リセット" color="gray" onClick={() => dispatch({ type: 'reset', snum: props.sentenceNum })}></TagSpan>
       {props.sentence.map((block, i) =>
         <Tagged key={i} blockNum={i} sentenceNum={props.sentenceNum} str={block}></Tagged>
       )}

@@ -3,8 +3,8 @@ import Export from './export'
 import SwitchDisplay from './switch_display'
 import { FileLoad, LabelLoad } from './fileload'
 import TextArea from './textarea'
-import TagCreateTag from './create_tag'
-import Tag from './tag'
+// import TagCreateTag from './create_tag'
+import { TagSpan } from './tag'
 import { Provider, RootContext } from '../context'
 
 
@@ -29,7 +29,7 @@ const App = () => {
       <div>
         <span>ラベル
         </span>
-        {tags.map((tag, i) => <Tag key={i}>{tag}</Tag>)}
+        {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
       </div>
       <TextArea {...{ sentences }}></TextArea>
     </>
