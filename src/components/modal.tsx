@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import ReactDom from 'react-dom'
+import React, { useEffect, ReactNode } from 'react'
 import { RootContext } from '../context'
 import styled from 'styled-components'
 
@@ -18,6 +17,8 @@ const ModalContent = styled.div`
   left: ${props => props.left}px;
   background: white;
   transform: translateX(-50%) translateY(-50%);
+  border-radius: 5px;
+  padding: 10px;
 `
 
 const OpenModal = () => {
@@ -30,15 +31,15 @@ const OpenModal = () => {
   )
 }
 
-const Modal = ({ whenClose, children }) => {
-  const { dispatch } = React.useContext(RootContext)
-  const handlekeypress = (e) => {
-    dispatch({ type: 'debug', anything: e.keyCode })
-    whenClose()
-  }
+const Modal: React.FC<{ whenClose: () => void, handleKeyPress?: (e: KeyboardEvent) => void }> = ({ whenClose, handleKeyPress, children }) => {
+  const { state: { tags }, dispatch } = React.useContext(RootContext)
+  // const handlekeypress = (e: KeyboardEvent) => {
+  //   dispatch({ type: 'addTag', newtag: tags[Number(e.key)], snum, bnum, a, b })
+  //   whenClose()
+  // }
   useEffect(() => {
-    document.addEventListener('keypress', handlekeypress)
-    return () => document.removeEventListener('keypress', handlekeypress)
+    document.addEventListener('keypress', handleKeyPress)
+    return () => document.removeEventListener('keypress', handleKeyPress)
   })
   const left = window.innerWidth / 2
   const top = window.innerHeight / 2
@@ -49,10 +50,17 @@ const Modal = ({ whenClose, children }) => {
   //   document.getElementById("modal-root")
   // )
   return (
-    <DivModal>
+    <DivModal onClick={whenClose}>
       <ModalContent top={top} left={left}>{children}</ModalContent>
     </DivModal>
   )
 }
 
-export default OpenModal
+// const useModal = () => {
+//   const [showModal, setShowModal] = React.useState(false)
+//   const openModal = () => setShowModal(true)
+//   const closeModal = () => setShowModal(false)
+//   return [openModal, closeModal]
+// }
+
+export default Modal
