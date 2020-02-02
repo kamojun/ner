@@ -9,7 +9,7 @@ import { Provider, RootContext } from '../context'
 
 const App = () => {
   const modalstate = useState(false)
-  const { state: { sentences, tags, message } } = useContext(RootContext)
+  const { state: { sentences, tags, message, filename } } = useContext(RootContext)
   const tagtext = tags.join('\n')
   const rawtext = sentences.map(
     sentence => sentence.map(
@@ -25,7 +25,7 @@ const App = () => {
       <br></br>
       <FileLoad></FileLoad>
       {sentences.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}
-      {sentences.length > 0 ? <Export text={rawtext}></Export> : null}
+      {sentences.length > 0 ? <Export filename={filename || "unknown.txt"} text={rawtext}></Export> : null}
       <div>
         <span>ラベル
         </span>

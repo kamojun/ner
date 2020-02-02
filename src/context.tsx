@@ -43,20 +43,20 @@ const insertTag = (ne: NamedEntity, a: number, b: number, tag: string) => {
   }
 }
 const joinNullTags = (nes: NamedEntity[]) => {
-  const nes2: NamedEntity[][] = []
+  const nes2: NamedEntity[] = []
   nes.forEach(ne => {
     if (ne.tag === null && nes2.length > 0) {
       const current = nes2.slice(-1)[0]
-      if (current.slice(-1)[0].tag === null) {
-        current.push(ne)
+      if (current.tag === null) {
+        current.content += ne.content
       } else {
-        nes2.push([ne])
+        nes2.push(ne)
       }
     } else {
-      nes2.push([ne])
+      nes2.push(ne)
     }
   })
-  return nes2.flat()
+  return nes2
 }
 
 const resetTag = (nes: NamedEntity[]) => {
@@ -65,8 +65,9 @@ const resetTag = (nes: NamedEntity[]) => {
 }
 
 const initalState: IStore = {
-  sentences: [[{ tag: null, content: "こんにちは。" }], []],
-  tags: ['TAG1'],
+  // sentences: [[{ tag: null, content: "こんにちは。" }], [{ tag: null, content: "今日はいい天気です。" }]],
+  sentences: [],
+  tags: [],
   tagcolors: new Map(),
   message: 'ラベル用のファイルを選択して下さい',
   saved: false,
@@ -95,11 +96,15 @@ type UAction = {
   curtag: string,
   disttag?: string
 } | {
-  type: 'newTag',
-  tagname: string
-} | {
+  //   type: 'newTag',
+  //   tagname: string
+  // } | {
   type: 'debug',
   anything: any
+} | {
+  type: 'deleteTag'
+  snum: number,
+  bnum: number,
 }
 
 interface StoreWithAction {
@@ -126,7 +131,9 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
         }
         const tagcolors = new Map(action.text.trim().split('\n').flatMap((x, i) => {
           const [tag, ...c] = x.split('\t')
-          return c.length > 0 ? [[tag, c[0]]] : []
+          const color = [0, 30, 90, 180, 210, 270, 300].map(hue => `hsla(${hue}, 100%, 50%, 0.6)`)[i]
+          // const color = ['hsla(0, 100%, 50%)', 'orange', 'lime', 'green', 'cyan', 'blue', 'purple', 'magenta', 'grey'][i]
+          return c.length > 0 ? [[tag, c[0]]] : [[tag, color]]
         }))
         return { ...state, tags, tagcolors, message: "ラベルを設定しました。" }
       }
@@ -160,14 +167,21 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       state.sentences[snum][bnum].tag = newtag
       return { ...state }
     }
-    case 'newTag': {
-      const { tags } = state
-      const { tagname } = action
-      if (!tags.some(x => x === tagname)) {
-        tags.push(tagname)
-      }
-      return { ...state, tags }
+    case 'deleteTag': {
+      const { snum, bnum } = action
+      const sentence = state.sentences[snum]
+      sentence[bnum].tag = null
+      state.sentences[snum] = joinNullTags(sentence)
+      return { ...state }
     }
+    // case 'newTag': {
+    //   const { tags } = state
+    //   const { tagname } = action
+    //   if (!tags.some(x => x === tagname)) {
+    //     tags.push(tagname)
+    //   }
+    //   return { ...state, tags }
+    // }
     default:
       return state
   }

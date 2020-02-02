@@ -23,6 +23,7 @@
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
+    "moment": "^2.24.0",
     "styled-components": "^5.0.0"
   }
 }

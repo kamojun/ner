@@ -18,6 +18,17 @@ const ModalChoice = styled.div`
   }
 `
 
+const ModalChoice2 = styled.div`
+  background-color: ${props => props.color}; 
+  /* border: 2px solid ${props => props.color}; */
+  border-radius: 10px;
+  margin: 0 10px;
+  color: white;
+  &:hover {
+    opacity: 0.8; 
+  }
+`
+
 const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity }> = ({ sentenceNum, blockNum, str: { content, tag } }) => {
   const { state: { tags, tagcolors }, dispatch } = React.useContext(RootContext)
   const [showModal, setShowModal] = React.useState(false)
@@ -67,7 +78,7 @@ const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity
           <a onClick={(e) => e.stopPropagation()} href={`https://ja.wikipedia.org/wiki/${selection}`} target="_blank">wikiで検索</a>
           <br></br>
           <a onClick={(e) => e.stopPropagation()} href={`https://www.google.com/search?q=${selection}`} target="_blank">googleで検索</a>
-          {tags.map((tag, i) => <ModalChoice key={i} color={tagcolors.get(tag)} onClick={onModalClick(i)}>{`${i + 1}: ${tag}`}</ModalChoice>)}
+          {tags.map((tag, i) => <ModalChoice2 key={i} color={tagcolors.get(tag)} onClick={onModalClick(i)}>{`${i + 1}: ${tag}`}</ModalChoice2>)}
         </Modal>
       }
     </Div>
