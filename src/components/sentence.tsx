@@ -1,20 +1,24 @@
 import React from 'react'
 import styled from 'styled-components'
 import Tagged from './tagged'
-import { NamedEntity, RootContext } from '../context'
+import { NamedEntity, RootContext, Entry, useRootContext } from '../context'
 import { TagSpan } from './tag'
 
 const Div = styled.div`
   margin: 5,5,5,5;
-  flex: inline;
+  display: flex;
+`
+const Text = styled.div`
+  color: black;
 `
 
 const Reset = styled.div`
-  display: inline-block;
+  align-self: center;
   border-radius: 10px;
   background-color: gray;
   transform: scale(0.8, 0.8);
   opacity: 0.8;
+  white-space: nowrap;
   &:hover{
     opacity: 0.6;
   }
@@ -33,5 +37,20 @@ const Sentence: React.FC<Props> = (props) => {
   )
 }
 
+const Sentence2: React.FC<{ key: number, snum: number, entry: Entry }> = (props) => {
+  const { dispatch } = useRootContext();
+  return (
+    <>
+      <Div>
+        <Reset onClick={() => dispatch({ type: 'reset', ...props })}>リセット</Reset>
+        <Text>{props.entry.text}</Text>
+        {/* {props.entry.annots.map((annot, i) => (
+        <span key={i}>{i}{props.entry.text}</span>
+      ))} */}
+      </Div>
+    </>
+  )
+}
 
-export default Sentence
+
+export { Sentence, Sentence2 }

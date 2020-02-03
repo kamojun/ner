@@ -1,9 +1,12 @@
 import React from 'react'
 import Tagged from './components/tagged'
 
+type Annotation = { tag: string, a: number, b: number }
+type Entry = { text: string, annots: Annotation[] }
 type NamedEntity = { tag: string | null, content: string }
 interface IStore {
   sentences: NamedEntity[][],
+  entries: Entry[],
   filename?: string,
   labelfilename?: string,
   labelrawtext?: string,
@@ -13,14 +16,31 @@ interface IStore {
   saved: false,
 }
 const parseText = (text: string) => (
-  (text.trim().split('\n\n').map(line => (
+  text.trim().split('\n\n').map(line => (
     line.trim().split('\n').map(block => {
       const [content, ..._tag] = block.trim().split('\t')
       const tag = _tag.length > 0 ? _tag[0] !== 'O' ? _tag[0] : null : null
       return { tag, content } as NamedEntity
     })
-  )))
+  ))
 )
+
+const parseText2 = (text: string) => (
+  text.trim().split('\n\n').map(line => {
+    const [text, ...lines] = line.trim().split('\n')
+    const annots = lines.flatMap(line => {
+      const [tag, ...ab] = line.trim().split(/\s/)
+      if (ab.length >= 2) {
+        const [a, b] = ab.map(Number)
+        return [{ tag, a, b }]
+      } else {
+        return []
+      }
+    })
+    return { text: text.trim(), annots } as Entry
+  })
+)
+
 const collectTagFromSentneces = (sentences: NamedEntity[][]) => (
   [...new Set(sentences.flat().flatMap(({ tag }) => tag !== null ? [tag] : []))]
 )
@@ -68,6 +88,7 @@ const resetTag = (nes: NamedEntity[]) => {
 const initalState: IStore = {
   // sentences: [[{ tag: null, content: "こんにちは。" }], [{ tag: null, content: "今日はいい天気です。" }]],
   sentences: [],
+  entries: [],
   tags: [],
   tagcolors: new Map(),
   message: 'ラベル用のファイルを選択して下さい',
@@ -141,13 +162,14 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
     }
     case 'load': {
       const sentences = (parseText(action.text)).map(joinNullTags)
+      const entries = parseText2(action.text)
       const tags = collectTagFromSentneces(sentences)
       const tagset = new Set(state.tags)
       const nonexisttags = tags.filter(tag => !tagset.has(tag))
       if (nonexisttags.length > 0) {
         return { ...state, message: "ラベル " + nonexisttags.join() + " が登録されていません。先にラベルのファイルを選択して下さい" }
       } else {
-        return { ...state, sentences, message: "ラベル付けできます。", filename: action.filename }
+        return { ...state, sentences, message: "ラベル付けできます。", filename: action.filename, entries }
       }
     }
     case 'addTag': {
@@ -190,5 +212,6 @@ const Provider = ({ children }: StoreProviderProps) => {
     </RootContext.Provider>
   )
 }
+const useRootContext = () => React.useContext(RootContext)
 
-export { RootContext, Provider, StoreWithAction, NamedEntity }
+export { RootContext, Provider, StoreWithAction, NamedEntity, useRootContext, Entry }

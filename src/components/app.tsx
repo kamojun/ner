@@ -5,11 +5,20 @@ import { FileLoad, LabelLoad } from './fileload'
 import TextArea from './textarea'
 // import TagCreateTag from './create_tag'
 import { TagSpan } from './tag'
-import { Provider, RootContext } from '../context'
+import { RootContext } from '../context'
+import styled from 'styled-components'
+
+const Header = styled.div`
+    background: #fff;
+    position: fixed;
+    z-index: 100;
+    width: 100%;
+    padding: 10px;
+`
 
 const App = () => {
   const modalstate = useState(false)
-  const { state: { sentences, tags, message, filename, labelrawtext } } = useContext(RootContext)
+  const { state: { sentences, tags, message, filename, labelrawtext, entries } } = useContext(RootContext)
   const rawtext = sentences.map(
     sentence => sentence.map(
       ({ content, tag }) => `${content}\t${tag || 'O'}`
@@ -17,20 +26,21 @@ const App = () => {
   ).join('\n\n') + '\n\n'
   return (
     <>
-      <h3>NER</h3>
-      <h4>{message}</h4>
-      <LabelLoad></LabelLoad>
-      {tags.length > 0 ? <SwitchDisplay text={labelrawtext}>{"テキスト表示"}</SwitchDisplay> : null}
-      <br></br>
-      <FileLoad></FileLoad>
-      {sentences.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}
-      {sentences.length > 0 ? <Export filename={filename || "unknown.txt"} text={rawtext}></Export> : null}
-      <div>
-        <span>ラベル
-        </span>
-        {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
-      </div>
-      <TextArea {...{ sentences }}></TextArea>
+      <Header>
+        <h4>NER</h4>
+        <p>{message}</p>
+        <LabelLoad></LabelLoad>
+        {tags.length > 0 ? <SwitchDisplay text={labelrawtext}>{"テキスト表示"}</SwitchDisplay> : null}
+        <br></br>
+        <FileLoad></FileLoad>
+        {sentences.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}
+        {sentences.length > 0 ? <Export filename={filename || "unknown.txt"} text={rawtext}></Export> : null}
+        <div>
+          <span>ラベル</span>
+          {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
+        </div>
+      </Header>
+      <TextArea {...{ sentences, entries }}></TextArea>
 
     </>
   )
