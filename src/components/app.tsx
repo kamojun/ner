@@ -9,8 +9,7 @@ import { Provider, RootContext } from '../context'
 
 const App = () => {
   const modalstate = useState(false)
-  const { state: { sentences, tags, message, filename } } = useContext(RootContext)
-  const tagtext = tags.join('\n')
+  const { state: { sentences, tags, message, filename, labelrawtext } } = useContext(RootContext)
   const rawtext = sentences.map(
     sentence => sentence.map(
       ({ content, tag }) => `${content}\t${tag || 'O'}`
@@ -21,7 +20,7 @@ const App = () => {
       <h3>NER</h3>
       <h4>{message}</h4>
       <LabelLoad></LabelLoad>
-      {tags.length > 0 ? <SwitchDisplay text={tagtext}>{"テキスト表示"}</SwitchDisplay> : null}
+      {tags.length > 0 ? <SwitchDisplay text={labelrawtext}>{"テキスト表示"}</SwitchDisplay> : null}
       <br></br>
       <FileLoad></FileLoad>
       {sentences.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}

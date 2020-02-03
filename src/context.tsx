@@ -6,15 +6,16 @@ interface IStore {
   sentences: NamedEntity[][],
   filename?: string,
   labelfilename?: string,
+  labelrawtext?: string,
   tags: string[],
   tagcolors: Map<string, string>,
   message: string,
   saved: false,
 }
 const parseText = (text: string) => (
-  (text.split('\n\n').map(line => (
-    line.split('\n').map(block => {
-      const [content, ..._tag] = block.split('\t')
+  (text.trim().split('\n\n').map(line => (
+    line.trim().split('\n').map(block => {
+      const [content, ..._tag] = block.trim().split('\t')
       const tag = _tag.length > 0 ? _tag[0] !== 'O' ? _tag[0] : null : null
       return { tag, content } as NamedEntity
     })
@@ -120,7 +121,7 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
   console.log(action)
   switch (action.type) {
     case 'loadLabel': {
-      const tags = action.text.trim().split('\n').map(x => x.split('\t')[0])
+      const tags = action.text.trim().split('\n').map(x => x.replace(/\s*\/\/[\s\S]*$/, '').split('\t')[0])
       const tagset = new Set(tags)
       if (tags.length > tagset.size) {
         return { ...state, message: "ラベルに重複があります。" + String(tags) }
@@ -130,12 +131,12 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
           return { ...state, message: "ラベル " + nonexisttags.join() + " がファイルに含まれていません。" }
         }
         const tagcolors = new Map(action.text.trim().split('\n').flatMap((x, i) => {
-          const [tag, ...c] = x.split('\t')
+          const [tag, ...c] = x.replace(/\s*\/\/[\s\S]*$/, '').split('\t')
           const color = [0, 30, 90, 180, 210, 270, 300].map(hue => `hsla(${hue}, 100%, 50%, 0.6)`)[i]
           // const color = ['hsla(0, 100%, 50%)', 'orange', 'lime', 'green', 'cyan', 'blue', 'purple', 'magenta', 'grey'][i]
           return c.length > 0 ? [[tag, c[0]]] : [[tag, color]]
         }))
-        return { ...state, tags, tagcolors, message: "ラベルを設定しました。" }
+        return { ...state, tags, tagcolors, labelrawtext: action.text, message: "ラベルを設定しました。" }
       }
     }
     case 'load': {
@@ -174,14 +175,6 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       state.sentences[snum] = joinNullTags(sentence)
       return { ...state }
     }
-    // case 'newTag': {
-    //   const { tags } = state
-    //   const { tagname } = action
-    //   if (!tags.some(x => x === tagname)) {
-    //     tags.push(tagname)
-    //   }
-    //   return { ...state, tags }
-    // }
     default:
       return state
   }
