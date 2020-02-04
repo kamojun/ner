@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Sentence, Sentence2 } from './sentence'
+import { Sentence } from './sentence'
 import { RootContext, NamedEntity, Entry } from '../context'
 
 const Div = styled.div`
@@ -11,8 +11,7 @@ const Div = styled.div`
 
 const TextArea = ({ sentences, entries }: { sentences: NamedEntity[][], entries: Entry[] }) => {
   return (
-    <Div>{entries.map((entry, snum) => <Sentence2 key={snum} {...{ snum, entry }}></Sentence2>)}</Div>
-    // <Div>{sentences.map((line, i) => <Sentence key={i} sentenceNum={i} sentence={line} />)}</Div>
+    <Div>{entries.map((entry, snum) => <Sentence key={snum} {...{ snum, entry }}></Sentence>)}</Div>
   )
 }
 

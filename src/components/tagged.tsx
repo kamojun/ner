@@ -7,18 +7,8 @@ import Modal from './modal'
 const Div = styled.div`
   display: inline-block;
 `
+
 const ModalChoice = styled.div`
-  border: thin solid black;
-  border-radius: 3px;
-  background-color:  ${props => props.color};
-  margin: 5px;
-  &:hover {
-    border: medium solid black
-
-  }
-`
-
-const ModalChoice2 = styled.div`
   background-color: ${props => props.color}; 
   /* border: 2px solid ${props => props.color}; */
   border-radius: 10px;
@@ -29,59 +19,60 @@ const ModalChoice2 = styled.div`
   }
 `
 
-const Tagged: React.FC<{ sentenceNum: number, blockNum: number, str: NamedEntity }> = ({ sentenceNum, blockNum, str: { content, tag } }) => {
+const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag: string | null, children: string }> = ({ snum, tnum, startposition, tag, children }) => {
   const { state: { tags, tagcolors }, dispatch } = React.useContext(RootContext)
   const [showModal, setShowModal] = React.useState(false)
   const [selection, setSelection] = React.useState('')
-  const [selectAB, setSelectAB] = React.useState([-1, -1])
+  const [selectAB, setSelectAB] = React.useState({ a: -1, b: -1 })
   const onClick = (e: MouseEvent) => {
+    console.log('hello?')
     e.altKey ?
       dispatch({
-        type: 'deleteTag', snum: sentenceNum, bnum: blockNum,
+        type: 'deleteTag', snum, tnum
       }) :
       dispatch({
-        type: 'switch', snum: sentenceNum, bnum: blockNum, curtag: tag
+        type: 'switch', snum, tnum, curtag: tag
       })
   }
   const onModalClick = (i: number) => (e: MouseEvent) => {
     dispatch({
-      type: 'addTag', snum: sentenceNum, bnum: blockNum, a: selectAB[0], b: selectAB[1], newtag: tags[i]
+      type: 'addTag', snum, ...selectAB, tag: tags[i]
     })
   }
   const AddTag = (e: MouseEvent) => {
     const s = window.getSelection()
     if (s.anchorNode !== s.focusNode) return;
-    const [a, b] = [s.anchorOffset, s.focusOffset]
+    const [a, b] = [s.anchorOffset, s.focusOffset].map(x => x + startposition)
     if (a === b) return;
     if (e.altKey) {
-      dispatch({ type: 'addTag', snum: sentenceNum, bnum: blockNum, a, b, newtag: tags[0] })
+      dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
     } else {
       // これなんとかしたいな...
       setSelection(s.toLocaleString())
       setShowModal(true)
-      setSelectAB([a, b])
+      setSelectAB({ a, b })
     }
   }
   const handleKeyPress = (e: KeyboardEvent) => {
     const newtag = tags[Number(e.key) - 1]
-    newtag !== undefined && dispatch({ type: 'addTag', newtag, snum: sentenceNum, bnum: blockNum, a: selectAB[0], b: selectAB[1] })
+    newtag !== undefined && dispatch({ type: 'addTag', tag: newtag, snum, ...selectAB })
     setShowModal(false)
   }
   return (
-    <Div>
+    <>
       {tag === null ?
-        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null}>{content}</TagSpan> :
-        <TagSpan tag={tag} onClick={onClick}>{content}</TagSpan>}
+        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
+        <TagSpan tag={tag} onClick={onClick}>{children}</TagSpan>}
       {showModal &&
         <Modal whenClose={() => setShowModal(false)} handleKeyPress={handleKeyPress}>
           <div>{selection}</div>
           <a onClick={(e) => e.stopPropagation()} href={`https://ja.wikipedia.org/wiki/${selection}`} target="_blank">wikiで検索</a>
           <br></br>
           <a onClick={(e) => e.stopPropagation()} href={`https://www.google.com/search?q=${selection}`} target="_blank">googleで検索</a>
-          {tags.map((tag, i) => <ModalChoice2 key={i} color={tagcolors.get(tag)} onClick={onModalClick(i)}>{`${i + 1}: ${tag}`}</ModalChoice2>)}
+          {tags.map((tag, i) => <ModalChoice key={i} color={tagcolors.get(tag)} onClick={onModalClick(i)}>{`${i + 1}: ${tag}`}</ModalChoice>)}
         </Modal>
       }
-    </Div>
+    </>
   )
 }
 

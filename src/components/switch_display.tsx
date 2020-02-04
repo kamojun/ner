@@ -1,8 +1,14 @@
 import React, { Children } from 'react';
 import styled from 'styled-components'
 
-const Pre = styled.pre`
+const Div = styled.div`
   border: 1px solid #000;
+  white-space: pre-wrap;
+  margin: auto;
+  width: 90%;
+  height: 200px;
+  overflow: scroll;
+  font-size: small;
 `
 
 const SwitchDisplay = ({ text, children }: { text: string, children?: string }) => {
@@ -12,7 +18,7 @@ const SwitchDisplay = ({ text, children }: { text: string, children?: string }) 
       <button onClick={() => setShow(!show)}>
         {!show ? children : "かくす"}
       </button >
-      {show ? <Pre>{text}</Pre> : null}
+      {show ? <Div>{text}</Div> : null}
     </>
   );
 }

@@ -44,6 +44,9 @@ const parseText2 = (text: string) => (
 const collectTagFromSentneces = (sentences: NamedEntity[][]) => (
   [...new Set(sentences.flat().flatMap(({ tag }) => tag !== null ? [tag] : []))]
 )
+const collectTagFromSentneces2 = (sentences: Entry[]) => (
+  [...new Set(sentences.flatMap(({ annots }) => annots.map(({ tag }) => tag)))]
+)
 const insertTag = (ne: NamedEntity, a: number, b: number, tag: string) => {
   if (ne.tag !== null) {
     return [ne]
@@ -104,29 +107,25 @@ type UAction = {
 } | {
   type: 'addTag',
   snum: number,
-  bnum: number,
   a: number,
   b: number,
-  newtag: string
+  tag: string
 } | {
   type: 'reset',
   snum: number
 } | {
   type: 'switch',
   snum: number,
-  bnum: number,
+  tnum: number
   curtag: string,
   disttag?: string
 } | {
-  //   type: 'newTag',
-  //   tagname: string
-  // } | {
   type: 'debug',
   anything: any
 } | {
   type: 'deleteTag'
   snum: number,
-  bnum: number,
+  tnum: number,
 }
 
 interface StoreWithAction {
@@ -161,40 +160,37 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       }
     }
     case 'load': {
-      const sentences = (parseText(action.text)).map(joinNullTags)
+      // const sentences = (parseText(action.text)).map(joinNullTags)
       const entries = parseText2(action.text)
-      const tags = collectTagFromSentneces(sentences)
+      const tags = collectTagFromSentneces2(entries)
       const tagset = new Set(state.tags)
       const nonexisttags = tags.filter(tag => !tagset.has(tag))
       if (nonexisttags.length > 0) {
         return { ...state, message: "ラベル " + nonexisttags.join() + " が登録されていません。先にラベルのファイルを選択して下さい" }
       } else {
-        return { ...state, sentences, message: "ラベル付けできます。", filename: action.filename, entries }
+        return { ...state, message: "ラベル付けできます。", filename: action.filename, entries }
       }
     }
     case 'addTag': {
-      const { snum, bnum, a, b, newtag } = action
-      const sentences = [...state.sentences]
-      const sentence = sentences[snum].flatMap((ne, i) => i === bnum ? insertTag(ne, a, b, newtag) : [ne])
-      sentences[snum] = sentence
-      return { ...state, sentences: sentences }
+      const { snum, a, b, tag: newtag } = action
+      state.entries[snum].annots.push({ tag: newtag, a, b })
+      return { ...state }
     }
     case 'reset': {
-      state.sentences[action.snum] = resetTag(state.sentences[action.snum])
+      state.entries[action.snum].annots = []
       return { ...state }
     }
     case 'switch': {
-      const { snum, bnum, curtag } = action
+      const { snum, tnum, curtag } = action
       const newtagnum = state.tags.flatMap((t, i) => t === curtag ? [i] : [])[0] + 1
       const newtag = state.tags[newtagnum % state.tags.length]
-      state.sentences[snum][bnum].tag = newtag
+      state.entries[snum].annots[tnum].tag = newtag
       return { ...state }
     }
     case 'deleteTag': {
-      const { snum, bnum } = action
-      const sentence = state.sentences[snum]
-      sentence[bnum].tag = null
-      state.sentences[snum] = joinNullTags(sentence)
+      const { snum, tnum } = action
+      const annots = state.entries[snum].annots.flatMap((entry, i) => i == tnum ? [] : [entry])
+      state.entries[snum].annots = annots
       return { ...state }
     }
     default:
@@ -214,4 +210,4 @@ const Provider = ({ children }: StoreProviderProps) => {
 }
 const useRootContext = () => React.useContext(RootContext)
 
-export { RootContext, Provider, StoreWithAction, NamedEntity, useRootContext, Entry }
+export { RootContext, Provider, StoreWithAction, NamedEntity, useRootContext, Entry, Annotation }
