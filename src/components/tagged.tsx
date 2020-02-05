@@ -25,32 +25,29 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
   const [selection, setSelection] = React.useState('')
   const [selectAB, setSelectAB] = React.useState({ a: -1, b: -1 })
   const onClick = (e: MouseEvent) => {
-    console.log('hello?')
     e.altKey ?
-      dispatch({
-        type: 'deleteTag', snum, tnum
-      }) :
-      dispatch({
-        type: 'switch', snum, tnum, curtag: tag
-      })
+      dispatch({ type: 'deleteTag', snum, tnum }) :
+      dispatch({ type: 'switch', snum, tnum, curtag: tag })
   }
   const onModalClick = (i: number) => (e: MouseEvent) => {
-    dispatch({
-      type: 'addTag', snum, ...selectAB, tag: tags[i]
-    })
+    dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
   }
   const AddTag = (e: MouseEvent) => {
     const s = window.getSelection()
     if (s.anchorNode !== s.focusNode) return;
     const [a, b] = [s.anchorOffset, s.focusOffset].map(x => x + startposition)
     if (a === b) return;
-    if (e.altKey) {
+    if (e.button === 0) {  // 左クリック
+      if (e.altKey) {
+        dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
+      } else {
+        // これなんとかしたいな...
+        setSelection(s.toLocaleString())
+        setShowModal(true)
+        setSelectAB({ a, b })
+      }
+    } else if (e.button === 2) {  // 右クリック
       dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
-    } else {
-      // これなんとかしたいな...
-      setSelection(s.toLocaleString())
-      setShowModal(true)
-      setSelectAB({ a, b })
     }
   }
   const handleKeyPress = (e: KeyboardEvent) => {
@@ -58,10 +55,14 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
     newtag !== undefined && dispatch({ type: 'addTag', tag: newtag, snum, ...selectAB })
     setShowModal(false)
   }
+  const onContextMenu = (e: MouseEvent) => {
+    e.preventDefault()
+    console.log('contextmenu!')
+  }
   return (
     <>
       {tag === null ?
-        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
+        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null} onContextMenu={onContextMenu}>{children}</TagSpan> :
         <TagSpan tag={tag} onClick={onClick}>{children}</TagSpan>}
       {showModal &&
         <Modal whenClose={() => setShowModal(false)} handleKeyPress={handleKeyPress}>

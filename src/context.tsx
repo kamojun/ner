@@ -5,7 +5,6 @@ type Annotation = { tag: string, a: number, b: number }
 type Entry = { text: string, annots: Annotation[] }
 type NamedEntity = { tag: string | null, content: string }
 interface IStore {
-  sentences: NamedEntity[][],
   entries: Entry[],
   filename?: string,
   labelfilename?: string,
@@ -89,8 +88,6 @@ const resetTag = (nes: NamedEntity[]) => {
 }
 
 const initalState: IStore = {
-  // sentences: [[{ tag: null, content: "こんにちは。" }], [{ tag: null, content: "今日はいい天気です。" }]],
-  sentences: [],
   entries: [],
   tags: [],
   tagcolors: new Map(),
@@ -146,7 +143,7 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       if (tags.length > tagset.size) {
         return { ...state, message: "ラベルに重複があります。" + String(tags) }
       } else {
-        const nonexisttags = collectTagFromSentneces(state.sentences).filter(tag => !tagset.has(tag))
+        const nonexisttags = collectTagFromSentneces2(state.entries).filter(tag => !tagset.has(tag))
         if (nonexisttags.length > 0) {
           return { ...state, message: "ラベル " + nonexisttags.join() + " がファイルに含まれていません。" }
         }
@@ -160,7 +157,6 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       }
     }
     case 'load': {
-      // const sentences = (parseText(action.text)).map(joinNullTags)
       const entries = parseText2(action.text)
       const tags = collectTagFromSentneces2(entries)
       const tagset = new Set(state.tags)

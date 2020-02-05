@@ -43,8 +43,8 @@ const text_splitter = (entry: Entry) => {
   return parts
 }
 
-const Sentence: React.FC<{ key: number, snum: number, entry: Entry }> = (props) => {
-  const { dispatch, state: { tagcolors } } = useRootContext();
+const Sentence: React.FC<{ snum: number, entry: Entry }> = (props) => {
+  const { dispatch } = useRootContext();
   const { snum, entry } = props
   const parts = text_splitter(entry)
   return (
@@ -52,7 +52,7 @@ const Sentence: React.FC<{ key: number, snum: number, entry: Entry }> = (props) 
       <Div>
         <Reset onClick={() => dispatch({ type: 'reset', ...props })}>リセット</Reset>
         <div>
-          {parts.map(([tag, startposition, text, tnum], key) => <Tagged {...{ key, snum, tag, startposition, tnum }}>{text}</Tagged>)}
+          {parts.map(([tag, startposition, text, tnum]) => <Tagged key={startposition} {...{ snum, tag, startposition, tnum }}>{text}</Tagged>)}
         </div>
       </Div>
     </>

@@ -17,8 +17,7 @@ const Header = styled.div`
 `
 
 const App = () => {
-  const modalstate = useState(false)
-  const { state: { sentences, tags, message, filename, labelrawtext, entries } } = useContext(RootContext)
+  const { state: { tags, message, filename, labelrawtext, entries } } = useContext(RootContext)
   const rawtext = entries.map(
     entry => [entry.text, ...entry.annots.map(({ tag, a, b }) => `${tag} ${a} ${b}`)].join('\n')
   ).join('\n\n') + '\n\n'
@@ -44,7 +43,7 @@ const App = () => {
         </div>
       </Header>
       <div style={{ height: headerHeight }}></div>
-      <TextArea {...{ sentences, entries }}></TextArea>
+      <TextArea {...{ entries }}></TextArea>
 
     </>
   )
