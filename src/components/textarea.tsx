@@ -6,12 +6,18 @@ import { Entry } from '../context'
 const Div = styled.div`
   margin: 0, auto;
   width: 100%;
-  border-width: 2;
+`
+const Spacer = styled.div`
+  width: 100%;
+  padding: 10px;
+  border-top: solid 1px black;
 `
 
 const TextArea = ({ entries }: { entries: Entry[] }) => {
   return (
-    <Div>{entries.map((entry, snum) => <Sentence key={snum} {...{ snum, entry }}></Sentence>)}</Div>
+    <Div>{entries.map((entry, snum) =>
+      <Spacer key={snum}><Sentence {...{ snum, entry }}></Sentence></Spacer>
+    )}</Div>
   )
 }
 

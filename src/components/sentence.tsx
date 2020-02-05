@@ -7,7 +7,6 @@ const Div = styled.div`
   margin: 5,5,5,5;
   padding: 10 0 10 0;
   display: flex;
-  border-top: solid 1px black;
 `
 
 const Reset = styled.div`

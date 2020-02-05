@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDom from 'react-dom'
 import styled from 'styled-components'
 
+// position: fixedは失敗
 const BackGround = styled.div`
   width: 120%;
   height: 120%;

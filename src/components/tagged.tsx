@@ -62,6 +62,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
     e.preventDefault()
     setPosition({ x: e.pageX, y: e.pageY })
     setShowContextMenu(true)
+    return false
   }
   const ReceiveChoice = (i: number | null) => {
     setShowContextMenu(false)
@@ -80,7 +81,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
   return (
     <>
       {tag === null ?
-        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
+        <TagSpan onContextMenu={e => e.preventDefault()} onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
         <>
           <TagSpan tag={tag} onClick={onClick} onContextMenu={onContextMenu}>{children}</TagSpan>
           {showContextMenu &&

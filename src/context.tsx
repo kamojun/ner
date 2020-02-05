@@ -13,7 +13,7 @@ interface IStore {
   message: string,
   saved: false,
 }
-const parseText2 = (text: string) => (
+const parseText = (text: string) => (
   text.trim().split('\n\n').map(line => {
     const [text, ...lines] = line.trim().split('\n')
     const annots = lines.flatMap(line => {
@@ -28,50 +28,9 @@ const parseText2 = (text: string) => (
     return { text: text.trim(), annots } as Entry
   })
 )
-const collectTagFromSentneces2 = (sentences: Entry[]) => (
+const collectTagFromSentneces = (sentences: Entry[]) => (
   [...new Set(sentences.flatMap(({ annots }) => annots.map(({ tag }) => tag)))]
 )
-const insertTag = (ne: NamedEntity, a: number, b: number, tag: string) => {
-  if (ne.tag !== null) {
-    return [ne]
-  } else {
-    const { content } = ne;
-    const left = content.slice(0, a)
-    const middle = content.slice(a, b)
-    const right = content.slice(b)
-    let inserted: NamedEntity[] = []
-    if (left.length > 0) {
-      inserted.push({ content: left, tag: null })
-    }
-    inserted.push({ content: middle, tag })
-    if (right.length > 0) {
-      inserted.push({ content: right, tag: null })
-    }
-    return inserted
-  }
-}
-const joinNullTags = (nes: NamedEntity[]) => {
-  const nes2: NamedEntity[] = []
-  nes.forEach(ne => {
-    if (ne.tag === null && nes2.length > 0) {
-      const current = nes2.slice(-1)[0]
-      if (current.tag === null) {
-        current.content += ne.content
-      } else {
-        nes2.push(ne)
-      }
-    } else {
-      nes2.push(ne)
-    }
-  })
-  return nes2
-}
-
-const resetTag = (nes: NamedEntity[]) => {
-  const content = nes.flatMap(ne => ne.content).join('')
-  return [{ content, tag: null } as NamedEntity]
-}
-
 const initalState: IStore = {
   entries: [],
   tags: [],
@@ -127,7 +86,7 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       if (tags.length > tagset.size) {
         return { ...state, message: "ラベルに重複があります。" + String(tags) }
       } else {
-        const nonexisttags = collectTagFromSentneces2(state.entries).filter(tag => !tagset.has(tag))
+        const nonexisttags = collectTagFromSentneces(state.entries).filter(tag => !tagset.has(tag))
         if (nonexisttags.length > 0) {
           return { ...state, message: "ラベル " + nonexisttags.join() + " がファイルに含まれていません。" }
         }
@@ -141,8 +100,8 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       }
     }
     case 'load': {
-      const entries = parseText2(action.text)
-      const tags = collectTagFromSentneces2(entries)
+      const entries = parseText(action.text)
+      const tags = collectTagFromSentneces(entries)
       const tagset = new Set(state.tags)
       const nonexisttags = tags.filter(tag => !tagset.has(tag))
       if (nonexisttags.length > 0) {
