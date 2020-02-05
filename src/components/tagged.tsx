@@ -45,9 +45,11 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
         dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
       } else {
         // これなんとかしたいな...
-        setSelection(s.toLocaleString())
-        setShowModal(true)
+        // setSelection(s.toLocaleString())
+        // setShowModal(true)
         setSelectAB({ a, b })
+        setPosition({ x: e.pageX, y: e.pageY })
+        setShowContextMenu(true)
       }
     } else if (e.button === 2 && !showContextMenu) {  // 右クリックで一発確定
       dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
@@ -64,13 +66,9 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
     setShowContextMenu(true)
     return false
   }
-  const ReceiveChoice = (i: number | null) => {
+  const ReceiveChoiceWithTagged = (i: number) => {
     setShowContextMenu(false)
     switch (i) {
-      case null: {
-        // do nothing
-        break;
-      }
       case -1:
         dispatch({ type: 'deleteTag', snum, tnum });
       default: {
@@ -78,21 +76,26 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
       }
     }
   }
+  const ReceiveChoiceWithNullTag = (i: number) => {
+    setShowContextMenu(false)
+    dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
+  }
+  const choice = [['削除', -1]].concat(tags.map((tag, i) => [tag, i, tagcolors.get(tag)]))
+  const nullTagChoice = tags.map((tag, i) => [tag, i, tagcolors.get(tag)])
   return (
     <>
       {tag === null ?
         <TagSpan onContextMenu={e => e.preventDefault()} onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
-        <>
-          <TagSpan tag={tag} onClick={onClick} onContextMenu={onContextMenu}>{children}</TagSpan>
-          {showContextMenu &&
-            <ContextMenu
-              pos={position}
-              receiveChoice={ReceiveChoice}
-              choice={[['削除', -1]].concat(tags.map((tag, i) => [tag, i])) as [string, number][]}
-            ></ContextMenu>}
-        </>
+        <TagSpan tag={tag} onClick={onClick} onContextMenu={onContextMenu}>{children}</TagSpan>
       }
-      {showModal &&
+      {showContextMenu &&
+        <ContextMenu
+          pos={position}
+          whenClose={() => setShowContextMenu(false)}
+          receiveChoice={tag === null ? ReceiveChoiceWithNullTag : ReceiveChoiceWithTagged}
+          choice={tag === null ? nullTagChoice as [string, number, string?][] : choice as [string, number, string?][]}
+        ></ContextMenu>}
+      {/* {showModal &&
         <Modal whenClose={() => setShowModal(false)} handleKeyPress={handleKeyPress}>
           <div>{selection}</div>
           <a onClick={(e) => e.stopPropagation()} href={`https://ja.wikipedia.org/wiki/${selection}`} target="_blank">wikiで検索</a>
@@ -100,7 +103,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
           <a onClick={(e) => e.stopPropagation()} href={`https://www.google.com/search?q=${selection}`} target="_blank">googleで検索</a>
           {tags.map((tag, i) => <ModalChoice key={i} color={tagcolors.get(tag)} onClick={onModalClick(i)}>{`${i + 1}: ${tag}`}</ModalChoice>)}
         </Modal>
-      }
+      } */}
     </>
   )
 }

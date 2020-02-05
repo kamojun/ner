@@ -9,7 +9,7 @@ const Div = styled.div`
 `
 const Spacer = styled.div`
   width: 100%;
-  padding: 10px;
+  padding: 10px 0;
   border-top: solid 1px black;
 `
 

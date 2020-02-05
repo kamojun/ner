@@ -20,9 +20,10 @@ const A = styled.a`
 
 const Button: React.FC<{ filename: string, text: string }> = ({ filename, text }) => {
   const [date, setDate] = React.useState('')
-  const basename = filename.includes('_') ? filename.split('_').slice(0, -1).join('_') : filename.replace(/\.txt$/, '')
+  const timeformat = "YYYYMMDDhhmm"
+  const basename = filename.replace(new RegExp('(_' + '\d'.repeat(timeformat.length) + ')?\.txt$'), '')   // 末尾に"_日付.txt"か".txt"があれば除去
   return (
-    <A download={`${basename}_${date}.txt`} href={URL.createObjectURL(new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), text]))} target='blank' onClick={() => setDate(moment().format("YYYYMMDDhhmm"))}>
+    <A download={`${basename}_${date}.txt`} href={URL.createObjectURL(new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), text]))} target='blank' onClick={() => setDate(moment().format(timeformat))}>
       エクスポート
     </A>
   );

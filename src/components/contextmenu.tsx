@@ -4,14 +4,14 @@ import styled from 'styled-components'
 
 // position: fixedは失敗
 const BackGround = styled.div`
-  width: 120%;
-  height: 120%;
-  z-index: 200;
+  width: ${window.outerWidth}px;
+  height: ${window.outerHeight}px;
   position: fixed;
 `
 
-const Div = styled.div`
+const MenuArea = styled.div`
   position: absolute;
+  z-index: 1;
   top: ${props => props.y}px;
   left: ${props => props.x}px;
   background-color: gray;
@@ -20,23 +20,23 @@ const Div = styled.div`
 `
 const MenuItem = styled.div`
   &:hover {
-    background-color: skyblue;
+    background-color: ${props => props.color};
   }
 `
 
-const ContextMenu: React.FC<{ receiveChoice: (i: number | null) => void, pos: { x: number, y: number }, choice: [string, number][] }> = ({ receiveChoice, pos, choice }) => {
+const ContextMenu: React.FC<{ whenClose: () => void, receiveChoice: (i: number) => void, pos: { x: number, y: number }, choice: [string, number, string?][] }> = ({ whenClose, receiveChoice, pos, choice }) => {
   // const [visible, setVisible] = React.useState(false)
-  const onClick = (i: number | null) => () => {
+  const onClick = (i: number) => () => {
     receiveChoice(i)
+    whenClose()
   }
   return ReactDom.createPortal(
-    <BackGround onClick={onClick(null)}>
-      <Div {...pos}>
-        {/* <MenuItem onClick={() => receiveChoice(1)}>choice1</MenuItem>
-      <MenuItem onClick={() => receiveChoice(2)}>choice2</MenuItem> */}
-        {choice.map(([name, num]) => <MenuItem key={num} onClick={onClick(num)}>{name}</MenuItem>)}
-      </Div>
-    </BackGround>, document.getElementById("context-menu")
+    <>
+      <MenuArea {...pos}>
+        {choice.map(([name, num, color]) => <MenuItem key={num} color={color || 'silver'} onClick={onClick(num)}>{name}</MenuItem>)}
+      </MenuArea>
+      <BackGround onClick={whenClose}></BackGround>
+    </>, document.getElementById("context-menu")
   )
 }
 
