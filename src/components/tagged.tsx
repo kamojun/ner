@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { RootContext, NamedEntity } from '../context'
 import { TagSpan } from './tag'
 import Modal from './modal'
+import ContextMenu from './contextmenu'
 
 const Div = styled.div`
   display: inline-block;
@@ -22,12 +23,14 @@ const ModalChoice = styled.div`
 const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag: string | null, children: string }> = ({ snum, tnum, startposition, tag, children }) => {
   const { state: { tags, tagcolors }, dispatch } = React.useContext(RootContext)
   const [showModal, setShowModal] = React.useState(false)
+  const [showContextMenu, setShowContextMenu] = React.useState(false)
+  const [position, setPosition] = React.useState({ x: 0, y: 0 })
   const [selection, setSelection] = React.useState('')
   const [selectAB, setSelectAB] = React.useState({ a: -1, b: -1 })
   const onClick = (e: MouseEvent) => {
     e.altKey ?
       dispatch({ type: 'deleteTag', snum, tnum }) :
-      dispatch({ type: 'switch', snum, tnum, curtag: tag })
+      dispatch({ type: 'switch', snum, tnum, tag: tags[(tags.findIndex(t => t === tag) + 1) % tags.length] })
   }
   const onModalClick = (i: number) => (e: MouseEvent) => {
     dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
@@ -46,7 +49,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
         setShowModal(true)
         setSelectAB({ a, b })
       }
-    } else if (e.button === 2) {  // 右クリック
+    } else if (e.button === 2 && !showContextMenu) {  // 右クリックで一発確定
       dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
     }
   }
@@ -57,13 +60,37 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
   }
   const onContextMenu = (e: MouseEvent) => {
     e.preventDefault()
-    console.log('contextmenu!')
+    setPosition({ x: e.pageX, y: e.pageY })
+    setShowContextMenu(true)
+  }
+  const ReceiveChoice = (i: number | null) => {
+    setShowContextMenu(false)
+    switch (i) {
+      case null: {
+        // do nothing
+        break;
+      }
+      case -1:
+        dispatch({ type: 'deleteTag', snum, tnum });
+      default: {
+        0 <= i && i < tags.length && dispatch({ type: 'switch', snum, tnum, tag: tags[i] })
+      }
+    }
   }
   return (
     <>
       {tag === null ?
-        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null} onContextMenu={onContextMenu}>{children}</TagSpan> :
-        <TagSpan tag={tag} onClick={onClick}>{children}</TagSpan>}
+        <TagSpan onMouseUp={tags.length > 0 ? AddTag : null}>{children}</TagSpan> :
+        <>
+          <TagSpan tag={tag} onClick={onClick} onContextMenu={onContextMenu}>{children}</TagSpan>
+          {showContextMenu &&
+            <ContextMenu
+              pos={position}
+              receiveChoice={ReceiveChoice}
+              choice={[['削除', -1]].concat(tags.map((tag, i) => [tag, i])) as [string, number][]}
+            ></ContextMenu>}
+        </>
+      }
       {showModal &&
         <Modal whenClose={() => setShowModal(false)} handleKeyPress={handleKeyPress}>
           <div>{selection}</div>

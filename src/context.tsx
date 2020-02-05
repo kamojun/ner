@@ -1,5 +1,4 @@
 import React from 'react'
-import Tagged from './components/tagged'
 
 type Annotation = { tag: string, a: number, b: number }
 type Entry = { text: string, annots: Annotation[] }
@@ -14,16 +13,6 @@ interface IStore {
   message: string,
   saved: false,
 }
-const parseText = (text: string) => (
-  text.trim().split('\n\n').map(line => (
-    line.trim().split('\n').map(block => {
-      const [content, ..._tag] = block.trim().split('\t')
-      const tag = _tag.length > 0 ? _tag[0] !== 'O' ? _tag[0] : null : null
-      return { tag, content } as NamedEntity
-    })
-  ))
-)
-
 const parseText2 = (text: string) => (
   text.trim().split('\n\n').map(line => {
     const [text, ...lines] = line.trim().split('\n')
@@ -38,10 +27,6 @@ const parseText2 = (text: string) => (
     })
     return { text: text.trim(), annots } as Entry
   })
-)
-
-const collectTagFromSentneces = (sentences: NamedEntity[][]) => (
-  [...new Set(sentences.flat().flatMap(({ tag }) => tag !== null ? [tag] : []))]
 )
 const collectTagFromSentneces2 = (sentences: Entry[]) => (
   [...new Set(sentences.flatMap(({ annots }) => annots.map(({ tag }) => tag)))]
@@ -114,8 +99,7 @@ type UAction = {
   type: 'switch',
   snum: number,
   tnum: number
-  curtag: string,
-  disttag?: string
+  tag: string
 } | {
   type: 'debug',
   anything: any
@@ -177,10 +161,8 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
       return { ...state }
     }
     case 'switch': {
-      const { snum, tnum, curtag } = action
-      const newtagnum = state.tags.flatMap((t, i) => t === curtag ? [i] : [])[0] + 1
-      const newtag = state.tags[newtagnum % state.tags.length]
-      state.entries[snum].annots[tnum].tag = newtag
+      const { snum, tnum, tag } = action
+      state.entries[snum].annots[tnum].tag = state.tags.some(t => t === tag) ? tag : state.tags[0]
       return { ...state }
     }
     case 'deleteTag': {
