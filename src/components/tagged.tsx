@@ -5,19 +5,10 @@ import { TagSpan } from './tag'
 import Modal from './modal'
 import ContextMenu from './contextmenu'
 
-const Div = styled.div`
-  display: inline-block;
-`
-
-const ModalChoice = styled.div`
-  background-color: ${props => props.color}; 
-  /* border: 2px solid ${props => props.color}; */
-  border-radius: 10px;
-  margin: 0 10px;
-  color: white;
-  &:hover {
-    opacity: 0.8; 
-  }
+const A = styled.a`
+  display: block;
+  font-size: 10;
+  white-space: nowrap;
 `
 
 const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag: string | null, children: string }> = ({ snum, tnum, startposition, tag, children }) => {
@@ -40,34 +31,27 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
     if (s.anchorNode !== s.focusNode) return;
     const [a, b] = [s.anchorOffset, s.focusOffset].map(x => x + startposition)
     if (a === b) return;
-    if (e.button === 0) {  // 左クリック
+    if (e.button === 0) {  // 左クリックで操作した時
       if (e.altKey) {
         dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
       } else {
-        // これなんとかしたいな...
-        // setSelection(s.toLocaleString())
-        // setShowModal(true)
         setSelectAB({ a, b })
         setPosition({ x: e.pageX, y: e.pageY })
+        setSelection(children.slice(s.anchorOffset, s.focusOffset))
         setShowContextMenu(true)
       }
     } else if (e.button === 2 && !showContextMenu) {  // 右クリックで一発確定
       dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
     }
   }
-  const handleKeyPress = (e: KeyboardEvent) => {
-    const newtag = tags[Number(e.key) - 1]
-    newtag !== undefined && dispatch({ type: 'addTag', tag: newtag, snum, ...selectAB })
-    setShowModal(false)
-  }
   const onContextMenu = (e: MouseEvent) => {
     e.preventDefault()
+    setSelection(children)
     setPosition({ x: e.pageX, y: e.pageY })
     setShowContextMenu(true)
     return false
   }
   const ReceiveChoiceWithTagged = (i: number) => {
-    setShowContextMenu(false)
     switch (i) {
       case -1:
         dispatch({ type: 'deleteTag', snum, tnum });
@@ -77,11 +61,10 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
     }
   }
   const ReceiveChoiceWithNullTag = (i: number) => {
-    setShowContextMenu(false)
     dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
   }
-  const choice = [['削除', -1]].concat(tags.map((tag, i) => [tag, i, tagcolors.get(tag)]))
-  const nullTagChoice = tags.map((tag, i) => [tag, i, tagcolors.get(tag)])
+  const choice = [['削除', -1]].concat(tags.map((tag, i) => [tag, i, tagcolors.get(tag), `${i + 1}`]))
+  const nullTagChoice = tags.map((tag, i) => [tag, i, tagcolors.get(tag), `${i + 1}`])
   return (
     <>
       {tag === null ?
@@ -93,8 +76,11 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
           pos={position}
           whenClose={() => setShowContextMenu(false)}
           receiveChoice={tag === null ? ReceiveChoiceWithNullTag : ReceiveChoiceWithTagged}
-          choice={tag === null ? nullTagChoice as [string, number, string?][] : choice as [string, number, string?][]}
-        ></ContextMenu>}
+          choice={tag === null ? nullTagChoice as [string, number, string?, string?][] : choice as [string, number, string?, string?][]}
+        >
+          <A onClick={(e) => e.stopPropagation()} href={`https://ja.wikipedia.org/wiki/${selection}`} target="_blank">wikiで検索</A>
+          <A onClick={(e) => e.stopPropagation()} href={`https://www.google.com/search?q=${selection}`} target="_blank">googleで検索</A>
+        </ContextMenu>}
       {/* {showModal &&
         <Modal whenClose={() => setShowModal(false)} handleKeyPress={handleKeyPress}>
           <div>{selection}</div>

@@ -4,9 +4,9 @@ import Tagged from './tagged'
 import { Entry, useRootContext } from '../context'
 
 const Div = styled.div`
-  margin: 5,5,5,5;
-  padding: 10 0 10 0;
+  padding: 5px;
   display: flex;
+  align-items: center;
 `
 
 const Reset = styled.div`
@@ -47,14 +47,13 @@ const Sentence: React.FC<{ snum: number, entry: Entry }> = (props) => {
   const { snum, entry } = props
   const parts = text_splitter(entry)
   return (
-    <>
-      <Div>
-        <Reset onClick={() => dispatch({ type: 'reset', ...props })}>リセット</Reset>
-        <div>
-          {parts.map(([tag, startposition, text, tnum]) => <Tagged key={startposition} {...{ snum, tag, startposition, tnum }}>{text}</Tagged>)}
-        </div>
-      </Div>
-    </>
+    <Div>
+      <div>No.{snum + 1}</div>
+      <Reset onClick={() => dispatch({ type: 'reset', ...props })}>リセット</Reset>
+      <div>
+        {parts.map(([tag, startposition, text, tnum]) => <Tagged key={startposition} {...{ snum, tag, startposition, tnum }}>{text}</Tagged>)}
+      </div>
+    </Div>
   )
 }
 
