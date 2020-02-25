@@ -1,66 +1,53 @@
-import React, { useEffect, ReactNode } from 'react'
-import { RootContext } from '../context'
+import React from 'react'
+import ReactDom from 'react-dom'
 import styled from 'styled-components'
 
-const DivModal = styled.div`
-  background: rgba(0,0,0,0.3);
-  width: 120%;
-  height: 120%;
+const BackGround = styled.div`
+  width: ${window.outerWidth}px;
+  height: ${window.outerHeight}px;
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 99;
-`
-const ModalContent = styled.div`
-  position: absolute;
-  top: ${props => props.top}px;
-  left: ${props => props.left}px;
-  background: white;
-  transform: translateX(-50%) translateY(-50%);
-  border-radius: 5px;
-  padding: 10px;
+  z-index: 150;
 `
 
-const OpenModal = () => {
-  const [isModalOpen, setModal] = React.useState(false)
-  return (
-    <div onClick={() => setModal(!isModalOpen)}>
-      <span>モーダル表示</span>
-      {isModalOpen && <Modal whenClose={() => setModal(!isModalOpen)}>{"こんにちは"}</Modal>}
-    </div>
+const ContentArea = styled.div`
+  position: fixed;
+  z-index: 200;
+  background-color: silver;
+  top: ${props => props.y}px;
+  left: ${props => props.x}px;
+  opacity: 0.95;
+  border: solid 1px black;
+`
+type Props = {
+  whenClose: () => void,
+  position?: { x: Number, y: Number }
+}
+const Modal: React.FC<Props> = ({ whenClose, position, children }) => {
+  const pos = position || { x: 0, y: 0 }
+  return ReactDom.createPortal(
+    <>
+      <ContentArea {...position}>{children}</ContentArea>
+      <BackGround onClick={(e: MouseEvent) => { e.stopPropagation(); whenClose(); }}></BackGround>
+    </>, document.getElementById("context-menu")
   )
 }
-
-const Modal: React.FC<{ whenClose: () => void, handleKeyPress?: (e: KeyboardEvent) => void }> = ({ whenClose, handleKeyPress, children }) => {
-  const { state: { tags }, dispatch } = React.useContext(RootContext)
-  // const handlekeypress = (e: KeyboardEvent) => {
-  //   dispatch({ type: 'addTag', newtag: tags[Number(e.key)], snum, bnum, a, b })
-  //   whenClose()
-  // }
-  useEffect(() => {
-    document.addEventListener('keypress', handleKeyPress)
-    return () => document.removeEventListener('keypress', handleKeyPress)
-  })
-  const left = window.innerWidth / 2
-  const top = window.innerHeight / 2
-  // return ReactDom.createPortal(
-  //   <DivModal>modal!
-  //     {children}
-  //   </DivModal>,
-  //   document.getElementById("modal-root")
-  // )
-  return (
-    <DivModal onClick={whenClose}>
-      <ModalContent top={top} left={left}>{children}</ModalContent>
-    </DivModal>
-  )
+const Div = styled.div`
+  border: 1px solid #000;
+  white-space: pre-wrap;
+  margin: auto;
+  width: 300px;
+  height: 200px;
+  overflow: scroll;
+  font-size: small;
+`
+const ModalInfo: React.FC<{ info: string }> = ({ info, children }) => {
+  const [showModal, setShowModal] = React.useState(false)
+  const [position, setPosition] = React.useState<{ x: Number, y: Number } | null>(null)
+  return <span onClick={(e) => { setPosition({ x: e.clientX, y: e.clientY }); console.log("spanclick"); setShowModal(!showModal); }}>
+    {children}
+    {showModal && <Modal {...{ position }} whenClose={() => { console.log('clickmodal'); setShowModal(false) }}><Div>{info}</Div></Modal>
+    }
+  </span >
 }
 
-// const useModal = () => {
-//   const [showModal, setShowModal] = React.useState(false)
-//   const openModal = () => setShowModal(true)
-//   const closeModal = () => setShowModal(false)
-//   return [openModal, closeModal]
-// }
-
-export default Modal
+export { Modal, ModalInfo }

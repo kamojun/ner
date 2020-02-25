@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { RootContext, NamedEntity } from '../context'
 import { TagSpan } from './tag'
-import Modal from './modal'
 import ContextMenu from './contextmenu'
 
 const A = styled.a`
