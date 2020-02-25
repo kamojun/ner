@@ -11,13 +11,16 @@ const Spacer = styled.div`
   width: 100%;
   /* padding: 10px 0; */
   border-top: solid 1px black;
+  margin-bottom: ${props => props.margin_bottom || 0}px;
 `
 
 const TextArea = ({ entries }: { entries: Entry[] }) => {
   return (
     <Div>{entries.map((entry, snum) =>
       <Spacer key={snum}><Sentence {...{ snum, entry }}></Sentence></Spacer>
-    )}</Div>
+    )}
+      <Spacer margin_bottom={window.outerHeight / 2}></Spacer>
+    </Div>
   )
 }
 

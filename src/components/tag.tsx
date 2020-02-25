@@ -8,9 +8,9 @@ const Span = styled.span`
   border-radius: 3px;
 `
 
-const TagSpan = (props) => {
+const TagSpan: React.FC<{ color?: string, tag: string }> = (props) => {
   const { state: { tagcolors } } = useRootContext()
-  const { color, transparnt, tag, children, ...otherprops } = props   // 型がわからん...
+  const { color, tag, children, ...otherprops } = props
   return (
     <Span {...otherprops} color={color || tagcolors.get(tag)}>{children || tag}</Span>
   )
