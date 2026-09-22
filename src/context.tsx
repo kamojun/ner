@@ -39,7 +39,7 @@ const initalState: IStore = {
   entries: [],
   tags: [],
   tagcolors: new Map(),
-  message: 'ラベル用のファイルを選択して下さい',
+  message: 'ラベル用のファイルを選択して下さい(とりあえず使ってみる場合は「デモ」をクリック)',
   saved: false,
 }
 type UAction = {
@@ -85,12 +85,7 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
   console.log(action)
   switch (action.type) {
     case 'loadLabel': {
-      const taglines = action.text
-        .replace(/\/\*[\s\S]*\*\//, '')
-        .split('\n')
-        .filter(x => x.length > 0 && (!x.match(/^\s/)))  // 空白始まりはコメント行扱い
-        .map(x => x.replace(/\s*\/\/[\s\S]*$/, '').split(/\s/))   // //もコメント
-      const tags = taglines.map(x => x[0])
+      const tags = action.text.trim().split('\n').map(x => x.replace(/\s*\/\/[\s\S]*$/, '').split('\t')[0])
       const tagset = new Set(tags)
       if (tags.length > tagset.size) {
         return { ...state, message: "ラベルに重複があります。" + String(tags) }
@@ -99,11 +94,12 @@ const reducer: React.Reducer<IStore, UAction> = (state, action) => {
         if (nonexisttags.length > 0) {
           return { ...state, message: "ラベル " + nonexisttags.join() + " がファイルに含まれていません。" }
         }
-        const color = [0, 30, 90, 180, 210, 270, 300].map(hue => `hsla(${hue}, 100%, 50%, 0.6)`).reverse()
-        const tagcolors = new Map(taglines.map(([tag, ...c]) => (
-          c.length > 0 ? [tag, c[0]] :
-            color.length > 0 ? [tag, color.pop()] : [tag, 'white']
-        )))
+        const tagcolors = new Map(action.text.trim().split('\n').flatMap((x, i) => {
+          const [tag, ...c] = x.replace(/\s*\/\/[\s\S]*$/, '').split('\t')
+          const color = [0, 30, 90, 180, 210, 270, 300].map(hue => `hsla(${hue}, 100%, 50%, 0.6)`)[i]
+          // const color = ['hsla(0, 100%, 50%)', 'orange', 'lime', 'green', 'cyan', 'blue', 'purple', 'magenta', 'grey'][i]
+          return c.length > 0 ? [[tag, c[0]]] : [[tag, color]]
+        }))
         return { ...state, tags, tagcolors, labelrawtext: action.text, message: "ラベルを設定しました。" }
       }
     }
