@@ -18,7 +18,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
   const [selectAB, setSelectAB] = React.useState({ a: -1, b: -1 })
   const onClick = (e: MouseEvent) => {
     e.altKey ?
-      dispatch({ type: 'deleteTag', snum, tnum }) :
+      dispatch({ type: 'switch', snum, tnum, tag: tags[(tags.findIndex(t => t === tag) + tags.length - 1) % tags.length] }) :
       dispatch({ type: 'switch', snum, tnum, tag: tags[(tags.findIndex(t => t === tag) + 1) % tags.length] })
   }
   const AddTag = (e: MouseEvent) => {

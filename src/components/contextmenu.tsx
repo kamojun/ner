@@ -10,7 +10,7 @@ const BackGround = styled.div`
 
 const MenuArea = styled.div`
   position: absolute;
-  z-index: 1;
+  z-index: 300;
   top: ${props => props.y - 50}px;
   left: ${props => props.x}px;
   background-color: silver;
