@@ -37,7 +37,7 @@ const FileLoad = () => {
   </>)
 }
 // const demolabel = "TAG1\trgba(255, 0, 0, 0.3)\nTAG2\trgba(0, 255, 0, 0.3)"
-const demolabel = "Time\nPos\n"
+const demolabel = "Time\nPos\nNeg\nDis\nSit"
 const LabelLoad = () => {
   const { state: { tags }, dispatch } = React.useContext(RootContext)
   return (<>

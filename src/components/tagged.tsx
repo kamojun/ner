@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { RootContext, NamedEntity } from '../context'
 import { TagSpan } from './tag'
-import Modal from './modal'
 import ContextMenu from './contextmenu'
 
 const A = styled.a`
@@ -13,24 +12,23 @@ const A = styled.a`
 
 const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag: string | null, children: string }> = ({ snum, tnum, startposition, tag, children }) => {
   const { state: { tags, tagcolors }, dispatch } = React.useContext(RootContext)
-  const [showModal, setShowModal] = React.useState(false)
   const [showContextMenu, setShowContextMenu] = React.useState(false)
   const [position, setPosition] = React.useState({ x: 0, y: 0 })
   const [selection, setSelection] = React.useState('')
   const [selectAB, setSelectAB] = React.useState({ a: -1, b: -1 })
   const onClick = (e: MouseEvent) => {
     e.altKey ?
-      dispatch({ type: 'deleteTag', snum, tnum }) :
+      dispatch({ type: 'switch', snum, tnum, tag: tags[(tags.findIndex(t => t === tag) + tags.length - 1) % tags.length] }) :
       dispatch({ type: 'switch', snum, tnum, tag: tags[(tags.findIndex(t => t === tag) + 1) % tags.length] })
-  }
-  const onModalClick = (i: number) => (e: MouseEvent) => {
-    dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
   }
   const AddTag = (e: MouseEvent) => {
     const s = window.getSelection()
     if (s.anchorNode !== s.focusNode) return;
-    const [a, b] = [s.anchorOffset, s.focusOffset].map(x => x + startposition)
-    if (a === b) return;
+    let [a, b] = [s.anchorOffset, s.focusOffset].map(x => x + startposition)
+    if (a === b) return; // aはbより手前にないといけない。
+    if (a > b) {
+      [a, b] = [b, a]
+    }
     if (e.button === 0) {  // 左クリックで操作した時
       if (e.altKey) {
         dispatch({ type: 'addTag', snum, a, b, tag: tags[0] })
@@ -63,7 +61,7 @@ const Tagged: React.FC<{ snum: number, tnum: number, startposition: number, tag:
   const ReceiveChoiceWithNullTag = (i: number) => {
     dispatch({ type: 'addTag', snum, ...selectAB, tag: tags[i] })
   }
-  const choice = [['削除', -1]].concat(tags.map((tag, i) => [tag, i, tagcolors.get(tag), `${i + 1}`]))
+  const choice = [['Delete', -1]].concat(tags.map((tag, i) => [tag, i, tagcolors.get(tag), `${i + 1}`]))
   const nullTagChoice = tags.map((tag, i) => [tag, i, tagcolors.get(tag), `${i + 1}`])
   return (
     <>

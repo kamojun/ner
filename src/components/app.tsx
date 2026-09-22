@@ -5,8 +5,9 @@ import { FileLoad, LabelLoad } from './fileload'
 import TextArea from './textarea'
 // import TagCreateTag from './create_tag'
 import { TagSpan } from './tag'
-import { RootContext } from '../context'
+import { RootContext, entitiyList } from '../context'
 import styled from 'styled-components'
+import { ModalInfo } from './modal'
 
 const Header = styled.div`
     background: #fff;
@@ -39,7 +40,12 @@ const App = () => {
         {entries.length > 0 ? <SwitchDisplay text={rawtext}>{"テキスト表示"}</SwitchDisplay> : null}
         <div>
           <span>ラベル</span>
-          {tags.map((tag, i) => <TagSpan key={i} tag={tag}></TagSpan>)}
+          {tags.map((tag, i) => <ModalInfo
+            key={i}
+            info={entitiyList(tag, entries).sort((a, b) => a.length - b.length).join("\n")}
+          >
+            <TagSpan tag={tag}></TagSpan>
+          </ModalInfo>)}
         </div>
       </Header>
       <div style={{ height: headerHeight }}></div>

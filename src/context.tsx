@@ -31,6 +31,10 @@ const parseText = (text: string) => (
 const collectTagFromSentneces = (sentences: Entry[]) => (
   [...new Set(sentences.flatMap(({ annots }) => annots.map(({ tag }) => tag)))]
 )
+const entitiyList = (_tag: String, entries: Entry[]) => {
+  return entries.flatMap(({ text, annots }) => annots.flatMap(({ tag, a, b }) => tag === _tag ? [text.substring(a, b)] : []))
+}
+
 const initalState: IStore = {
   entries: [],
   tags: [],
@@ -147,4 +151,4 @@ const Provider = ({ children }: StoreProviderProps) => {
 }
 const useRootContext = () => React.useContext(RootContext)
 
-export { RootContext, Provider, StoreWithAction, NamedEntity, useRootContext, Entry, Annotation }
+export { RootContext, Provider, StoreWithAction, NamedEntity, useRootContext, Entry, Annotation, entitiyList }
